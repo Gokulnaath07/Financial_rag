@@ -113,7 +113,7 @@ async def askQuestion(req: AskRequest):
             "sources_used": []
         }
     return {
-        "answer" : f"RAG not implemented yet. But the extracted text is: {text[:200]}",
+        "answer" : f"RAG not implemented yet. But the extracted text is: {text[:200]}.......",
         "citations": [],
         "sources_used": []
     }
