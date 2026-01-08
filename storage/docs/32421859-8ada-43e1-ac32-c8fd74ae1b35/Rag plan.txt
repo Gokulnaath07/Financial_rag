@@ -1,0 +1,244 @@
+Perfect. This is the **right reset**: new tab, clean mental space, **RAG-first**, no UI, no distractions.
+
+Below is **exactly** what you need to **learn before starting** and **what you must already have when you start coding** — nothing extra, nothing missing.
+
+---
+
+# PART 1 — WHAT YOU MUST LEARN (IN ORDER)
+
+This is a **learning checklist**, not a tutorial list.
+You don’t need mastery — just *working knowledge*.
+
+---
+
+## 1️⃣ RAG fundamentals (NON-NEGOTIABLE)
+
+**Goal:** Understand what problems each step solves.
+
+You must clearly understand:
+
+* What **RAG** is (Retrieve → Augment → Generate)
+* Why LLMs hallucinate without retrieval
+* Why retrieval quality > model choice
+
+**You should be able to explain in 1 sentence:**
+
+> “RAG injects verified document context into the LLM prompt so answers are grounded in source data.”
+
+---
+
+## 2️⃣ Chunking strategies (THIS MAKES OR BREAKS RAG)
+
+**Goal:** Know *when* to use which chunking strategy.
+
+You must understand:
+
+* **Header / section chunking**
+
+  * Why financial docs benefit from this
+* **Semantic chunking**
+
+  * What embedding-guided splitting means
+* Why chunk size ≠ fixed token count
+
+You don’t need to invent chunking logic — just understand routing logic.
+
+---
+
+## 3️⃣ Embeddings (PRACTICAL, NOT THEORY)
+
+**Goal:** Know what embeddings do and where they live.
+
+You must know:
+
+* What embeddings represent (semantic similarity)
+* Difference between:
+
+  * **client-side embeddings** (you compute vectors)
+  * **server-side embeddings** (Weaviate does it)
+* Why cosine similarity is used
+
+You **do NOT** need math derivations.
+
+---
+
+## 4️⃣ Vector search vs keyword search vs hybrid
+
+**Goal:** Understand retrieval trade-offs.
+
+You must understand:
+
+* **Semantic search** → paraphrases
+* **BM25** → exact terms, clauses, numbers
+* **Hybrid search** → best of both
+* Why finance/legal almost always uses hybrid
+
+---
+
+## 5️⃣ Reranking (IMPORTANT BUT SIMPLE)
+
+**Goal:** Know why reranking exists.
+
+You must know:
+
+* Retrieval is recall-heavy
+* Reranking improves precision
+* Reranking ≠ embeddings storage
+* It’s optional but powerful
+
+You don’t need to train a reranker — just know how it’s used.
+
+---
+
+## 6️⃣ Prompt grounding & citations
+
+**Goal:** Stop hallucinations.
+
+You must understand:
+
+* Why “Answer only using the provided context” matters
+* How to force citations (page/section)
+* Why LLMs should say “not found” sometimes
+
+---
+
+## 7️⃣ Finance-safe answering (VERY IMPORTANT)
+
+**Goal:** Prevent fake numbers.
+
+You must understand:
+
+* Why LLMs should not compute math blindly
+* Why numbers must come from retrieved chunks
+* Why calculation should be done in code, not by LLM
+
+---
+
+## 8️⃣ API-first thinking (HOW YOU WILL TEST)
+
+**Goal:** Be comfortable with Swagger/Postman testing.
+
+You must understand:
+
+* How a POST `/ingest` works
+* How a POST `/chat` works
+* How to inspect JSON responses
+* Why debug endpoints matter
+
+---
+
+# PART 2 — WHAT YOU MUST HAVE BEFORE YOU START CODING
+
+These are **hard requirements**.
+
+---
+
+## 🔧 Technical setup (DO THIS FIRST)
+
+You must have:
+
+### ✅ Python environment
+
+* Python 3.10+
+* venv or poetry
+* You can run `fastapi` and `uvicorn`
+
+### ✅ Docker installed
+
+* You can run `docker compose up`
+* Required for Weaviate (local)
+
+### ✅ API keys ready
+
+* Gemini API key
+* LlamaParse API key
+* (Optional) LangSmith API key
+
+Put them in environment variables — not hardcoded.
+
+---
+
+## 🧠 Mental clarity (SERIOUSLY IMPORTANT)
+
+You must accept:
+
+* **No UI at first**
+* **Correctness > speed**
+* **Swagger/Postman is enough**
+* **One PDF is enough initially**
+
+If you don’t accept this, you’ll scope-creep.
+
+---
+
+## 📁 Project decisions you must lock in (before coding)
+
+You must decide and **not change mid-way**:
+
+| Decision  | Choice                     |
+| --------- | -------------------------- |
+| Backend   | FastAPI                    |
+| Vector DB | Weaviate                   |
+| LLM       | Gemini                     |
+| OCR       | LlamaParse                 |
+| Chunking  | Header → Semantic fallback |
+| Retrieval | Hybrid default             |
+| Reranking | MiniLM (optional toggle)   |
+| Testing   | Swagger / Postman          |
+
+---
+
+# PART 3 — WHAT YOU SHOULD **NOT** LEARN YET
+
+Skip these **for now**:
+❌ React / UI
+❌ LangGraph / agents
+❌ Model hosting
+❌ Fine-tuning
+❌ Caching / Redis
+❌ Auth / users
+❌ Multi-tenancy
+
+These come *after* core RAG works.
+
+---
+
+# PART 4 — READY CHECK (VERY IMPORTANT)
+
+You are **ready to start coding** when you can answer YES to all:
+
+* Can I explain RAG in 30 seconds?
+* Do I know why chunking matters?
+* Do I know what hybrid search is?
+* Do I know where embeddings are generated?
+* Do I know how to test via Swagger?
+* Am I okay with no UI for now?
+
+If YES → start coding.
+
+---
+
+# PART 5 — YOUR NEXT STEP (DO NOT SKIP)
+
+👉 **Before writing any code**, do this:
+
+1. Open a new tab
+2. Create a blank folder
+3. Write a 10–12 line `README.md` answering:
+
+   * What problem this API solves
+   * What inputs it accepts
+   * What it returns
+   * What “correct answer” means
+
+This locks your scope.
+
+---
+
+If you want, next I’ll give you:
+
+* **Day 1 coding plan** (exact files + commands)
+* OR **RAG mental model diagram** (text-based)
+* OR **exact API contract** (request/response JSON)
+
+Just tell me which one.
