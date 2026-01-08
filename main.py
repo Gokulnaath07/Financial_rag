@@ -3,6 +3,8 @@ import uvicorn
 import uuid
 import os
 from pydantic import BaseModel #pydantic for validation(whether the data has correct type in some cases it will convert the sent data eg 123 int to "123"string if string is expected)
+from services.extractor import extract_txt
+
 
 current_app=FastAPI()
 
@@ -82,22 +84,36 @@ async def askQuestion(req: AskRequest):
     if not matches:
         raise HTTPException(status_code=404, detail="No files found under this Doc ID.")
     
-    txt_files=[]
-    for name in matches:
-        if name.lower().endswith(".txt"):
-            txt_files.append(name)
+    # txt_files=[]
+    # for name in matches:
+    #     if name.lower().endswith(".txt"):
+    #         txt_files.append(name)
     
-    stored_filename=matches[0] if matches else txt_files[0]
-    if stored_filename.lower().endswith(".txt"):
-        with open (os.path.join(dir_path, stored_filename), "r", encoding="utf-8", errors="ignore") as r:
-            text=r.read()
+    # stored_filename=matches[0] if matches else txt_files[0]
+    # if stored_filename.lower().endswith(".txt"):
+    #     with open (os.path.join(dir_path, stored_filename), "r", encoding="utf-8", errors="ignore") as r:
+    #         text=r.read()
+    #     return {
+    #         "answer" : f"The preview of the given document for the {req.doc_id} is : {text[:200]}...RAG is not implemented yet",
+    #         "citations": [],
+    #         "sources_used": []
+    #     }
+
+    stored_filename=matches[0]
+    text=extract_txt(os.path.join(dir_path, stored_filename))
+
+    if not text.strip(): 
+        """.strip() while extraction because the python sees 
+    empty spaces as text so whenever the file is image based it will give either " " or newline\n or 
+    something empty. so python wont consider it as valid text."""
+        
         return {
-            "answer" : f"The preview of the given document for the {req.doc_id} is : {text[:200]}...RAG is not implemented yet",
+            "answer": "The extracted text is empty. Probably the pdf is scanned or image based. RAG not implemented yet.",
             "citations": [],
             "sources_used": []
         }
     return {
-        "answer" : "RAG not implemented yet",
+        "answer" : f"RAG not implemented yet. But the extracted text is: {text[:200]}",
         "citations": [],
         "sources_used": []
     }
