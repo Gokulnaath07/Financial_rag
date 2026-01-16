@@ -19,7 +19,13 @@ def extract_txt(file_path: str) ->str:
     return ""
 
 def parse_pdf_blocks(file_path: str):
-    """This now uses Pymupdf to extract the pages and give the blocks for downstream operations."""
+    """PDF primitives
+            ↓
+    RAW spans        (direct from PyMuPDF)
+            ↓
+    STRUCTURED spans (normalized, typed, consistent)
+            ↓
+    GROUPED units    (lines, paragraphs, sections)"""
 
     doc=fitz.open(file_path)
 
@@ -83,4 +89,34 @@ def parse_pdf_blocks(file_path: str):
                     f"Text: {s['text']!r}" 
                     
                 )
-        
+
+def extract_rawspans(file_path: str):
+
+    raw_spans=[]
+    
+    doc=fitz.open(file_path)
+
+    pages_dicts=doc.get_text("dict")
+    blocks=pages_dicts.get("blocks", [])
+
+    for index, pages in enumerate(blocks):
+        if pages.get("type") !=0:
+            continue
+
+        for line in pages.get("lines", []):
+            for span in pages.get("spans", []):
+                
+                if not span['text']:
+                    continue
+                raw_spans.append(
+                    {
+                        "Page no": index + 1,
+                        "Element type": "text",
+                        "Text": span['text'],
+                        "Size": span['size'],
+                        "BBox": span['bbox']
+                    }
+                )
+    return raw_spans
+
+
