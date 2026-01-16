@@ -120,3 +120,28 @@ def extract_rawspans(file_path: str):
     return raw_spans
 
 
+def structured_spans(raw_spans: list[dict]) -> list[dict]:
+    structured_spans=[]
+
+    cleaned= [s for s in raw_spans if s["text"].strip()]
+
+    sizes=[s['size'] for s in cleaned]
+
+    median_size= statistics.median(sizes)
+
+    structured_spans=[]
+    for s in cleaned:
+        is_header_canditate= "header_candidate" if (s['size'] >= median_size * 1.3 and 
+                                                    any(c.isalpha() for c in s['text'])) else "body"
+        
+        structured_spans.append(
+            {
+                "role": is_header_canditate,
+                "text": s['text'],
+                "size": s['size'],
+                "bbox": s['bbox'],
+                "page_no": s['page_no']
+            }
+        )
+
+    
