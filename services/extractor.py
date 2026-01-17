@@ -27,68 +27,16 @@ def parse_pdf_blocks(file_path: str):
             ↓
     GROUPED units    (lines, paragraphs, sections)"""
 
-    doc=fitz.open(file_path)
-
-    for index, page in enumerate(doc):
-        # if index>=2: check only first 2 pages
-        #     break
-        page_dict=page.get_text("dict")
-        blocks= page_dict.get("blocks",[])
-
-        spans=[]
-        #print(f"Page {index +1} has {len(blocks)} blocks.")
-        for block in blocks:
-            if block.get("type")!=0:
-                continue
-
-            for line in block.get("lines", []):
-                for span in line.get("spans", []):
-                    text = span['text'].strip()
-                    if not text:
-                        continue
-                    # print(
-                    #     f"Page no: {index + 1} | " 
-                    #     f"Text: {text[:50]!r} | "
-                    #     f"Font: {span['font']} |"
-                    #     f"Size: {span['size']}"
-                    # )
-                    spans.append(
-                        {
-                            "element_type": "text",
-                            "text": text,
-                            "font": span['font'],
-                            "size": span['size'],
-                            "bbox": span['bbox']
-                        }
-                    )
-        structured_spans = []
-        sizes=[s['size'] for s in spans]
-        if not sizes:
-            continue
-        median_size= statistics.median(sizes)
-
-        for s in spans:
-            header_candidate=(s['size'] >= median_size * 1.3 and 
-                              any(c.isalpha() for c in s['text'])
-                              )
-            
-            structured_spans.append(
-                {
-                    "role": "header_candidate" if header_candidate else "body",
-                    "text": s['text'],
-                    "font": s['font'],
-                    "size": s['size'],
-                    "bbox": s['bbox']
-                }
-            )
-            if header_candidate:
-
-                print(
-                    f"Page no: {index+1} | "
-                    f"Role: {'header_candidate'} | "
-                    f"Text: {s['text']!r}" 
-                    
-                )
+    extract_rawspans= extract_rawspans(file_path)
+    structured= structured_spans(extract_rawspans)
+    sorted_headers= sort_headers(structured)
+    header_lines=headers_by_proximity(sorted_headers)
+    return {
+        "raw_spans": extract_rawspans,
+        "structured_spans": structured,
+        "sorted_headers": sorted_headers,
+        "header_lines": header_lines
+    }
 
 def extract_rawspans(file_path: str):
 
