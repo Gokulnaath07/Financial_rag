@@ -96,27 +96,66 @@ def extract_rawspans(file_path: str):
     
     doc=fitz.open(file_path)
 
-    pages_dicts=doc.get_text("dict")
-    blocks=pages_dicts.get("blocks", [])
 
-    for index, pages in enumerate(blocks):
-        if pages.get("type") !=0:
-            continue
+    for index, pages in enumerate(doc):
+        pages_dicts=pages.get_text("dict")
+        blocks=pages_dicts.get("blocks", [])
+        for block in blocks:
+            if block.get("type") !=0:
+                continue
 
-        for line in pages.get("lines", []):
-            for span in pages.get("spans", []):
-                
-                if not span['text']:
-                    continue
-                raw_spans.append(
-                    {
-                        "Page no": index + 1,
-                        "Element type": "text",
-                        "Text": span['text'],
-                        "Size": span['size'],
-                        "BBox": span['bbox']
-                    }
-                )
+            for line in block.get("lines", []):
+                for span in line.get("spans", []):
+                    
+                    if not span['text']:
+                        continue
+                    raw_spans.append(
+                        {
+                            "page_no": index + 1,
+                            "text": span['text'],
+                            "size": span['size'],
+                            "bbox": span['bbox']
+                        }
+                    )
     return raw_spans
 
 
+def structured_spans(raw_spans: list[dict]) -> list[dict]:
+    
+
+    cleaned= [s for s in raw_spans if s["text"].strip()]
+
+    if not cleaned:
+        return []
+    
+    sizes=[s['size'] for s in cleaned]
+
+    median_size= statistics.median(sizes)
+
+    structured_spans=[]
+    for s in cleaned:
+        is_header_canditate= "header_candidate" if (s['size'] >= median_size * 1.3 and 
+                                                    any(c.isalpha() for c in s['text'])) else "body"
+        
+        structured_spans.append(
+            {
+                "role": is_header_canditate,
+                "text": s['text'],
+                "size": s['size'],
+                "bbox": s['bbox'],
+                "page_no": s['page_no']
+            }
+        )
+    return structured_spans
+
+def sort_headers(structured_spans: list[dict]) -> list[dict]:
+
+    sorted_headers=[s for s in structured_spans if s['role']=="header_candidate"]
+    sorted_headers.sort(key=lambda s: (s["page_no"], s["bbox"][1], s["bbox"][0]))
+
+
+    return sorted_headers
+
+def headers_by_proximity(spans, threshold=50):
+
+    pass
