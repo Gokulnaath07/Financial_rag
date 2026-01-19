@@ -27,14 +27,14 @@ def parse_pdf_blocks(file_path: str):
             ↓
     GROUPED units    (lines, paragraphs, sections)"""
 
-    extract_rawspans= extract_rawspans(file_path)
-    structured= structured_spans(extract_rawspans)
+    rawspans= extract_rawspans(file_path)
+    structured= structured_spans(rawspans)
     sorted_headers= sort_headers(structured)
     header_lines=headers_by_proximity(sorted_headers)
     return {
-        "raw_spans": extract_rawspans,
-        "structured_spans": structured,
-        "sorted_headers": sorted_headers,
+        # "raw_spans": rawspans,
+        # "structured_spans": structured,
+        # "sorted_headers": sorted_headers,
         "header_lines": header_lines
     }
 
@@ -106,4 +106,23 @@ def sort_headers(structured_spans: list[dict]) -> list[dict]:
 
 def headers_by_proximity(spans, threshold=50):
 
-    pass
+    header_blocks=[]
+    current_blocks_grp=[]
+
+    for span in spans:
+        if not current_blocks_grp:
+            current_blocks_grp.append(span)
+            continue
+
+        prev_y=current_blocks_grp[-1]["bbox"][1]
+        current_y=span["bbox"][1]
+
+        if abs(current_y-prev_y) <=threshold:
+            current_blocks_grp.append(span)
+        else:
+            header_blocks.append(current_blocks_grp)
+            current_blocks_grp=[span]
+
+    if current_blocks_grp:
+        header_blocks.append(current_blocks_grp)
+    return header_blocks
