@@ -28,7 +28,11 @@ def parse_pdf_blocks(file_path: str):
     GROUPED units    (lines, paragraphs, sections)"""
 
     rawspans= extract_rawspans(file_path)
-    structured= structured_spans(rawspans)
+    group_pages=grouping_by_pages(rawspans)
+    structured= []
+
+    for page_no, page_spans in group_pages.items():
+        structured.extend(structured_spans(page_spans))
     sorted_headers= sort_headers(structured)
     header_lines=headers_by_proximity(sorted_headers)
     return {
@@ -66,7 +70,16 @@ def extract_rawspans(file_path: str):
                         }
                     )
     return raw_spans
+from collections import defaultdict
 
+def grouping_by_pages(spans: list[dict]) -> dict[int, list[dict]]:
+
+    pages=defaultdict(list)
+
+    for s in spans:
+        pages[s['page_no']].append(s)
+
+    return dict(pages)
 
 def structured_spans(raw_spans: list[dict]) -> list[dict]:
     
