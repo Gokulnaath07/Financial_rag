@@ -8,3 +8,6 @@ storage/
 
 .env
 .env.*
+
+json.log
+*.json
