@@ -1,3 +1,5 @@
+import json
+import os
 import statistics
 from pypdf import PdfReader
 import fitz #pymupdf
@@ -28,18 +30,41 @@ def parse_pdf_blocks(file_path: str):
     GROUPED units    (lines, paragraphs, sections)"""
 
     rawspans= extract_rawspans(file_path)
+    """
+    “The header or body role is assigned while iterating over spans grouped by page number.
+    Each iteration processes spans from a single page, 
+    and the header/body classification is applied within the structured_spans function before the results are extended into the global structured list.”"""
     group_pages=grouping_by_pages(rawspans)
     structured= []
 
     for page_no, page_spans in group_pages.items():
+        """Using extend:
+                structured = []
+                page_list = [{"text":"A"},{"text":"B"}]
+                structured.extend(page_list) # -> [{"text":"A"},{"text":"B"}]
+
+                Using append:
+                structured = []
+                structured.append(page_list) # -> [[{"text":"A"},{"text":"B"}]]"""
         structured.extend(structured_spans(page_spans))
+    sections=attach_text_to_header(structured)
+    
     sorted_headers= sort_headers(structured)
     header_lines=headers_by_proximity(sorted_headers)
+    output_text_to_headers="Text_headers.json"
+    output_headers="Headers_grouped.json"
+    with open(output_text_to_headers, "w", encoding="utf-8", errors="ignore") as w:
+        w.write(json.dumps(sections, indent=2, ensure_ascii=False))
+    if os.path.exists(output_text_to_headers):
+        print(f"Written to {output_text_to_headers}")
+    with open (output_headers, "w", encoding="utf-8", errors="ignore") as w:
+        w.write(json.dumps(header_lines, indent=2, ensure_ascii=False))
+    if os.path.exists(output_headers):
+        print(f"Written to {output_headers}")
     return {
-        # "raw_spans": rawspans,
-        # "structured_spans": structured,
-        # "sorted_headers": sorted_headers,
-        "header_lines": header_lines
+        "structured":structured,
+        "headers":header_lines,
+        "Sections":sections
     }
 
 def extract_rawspans(file_path: str):
@@ -109,6 +134,31 @@ def structured_spans(raw_spans: list[dict]) -> list[dict]:
         )
     return structured_spans
 
+def attach_text_to_header(spans: list[dict]):
+    
+    sections=[]
+    current_sections=None
+
+    for span in spans:
+        if span['role']=="header_candidate":
+                # If a section is already open, close it before starting a new one
+            if current_sections: 
+                sections.append(current_sections)
+## Start a new section at this header also new headers has been initiated
+            current_sections={
+                "header": span['text'],
+                "page_no": span["page_no"],
+                "content": []
+            }
+        else:
+            if current_sections:
+                current_sections['content'].append(span['text'])
+                
+    # Append the final section if one is still open after iteration
+    if current_sections:
+        sections.append(current_sections)
+    return sections
+
 def sort_headers(structured_spans: list[dict]) -> list[dict]:
 
     sorted_headers=[s for s in structured_spans if s['role']=="header_candidate"]
@@ -136,6 +186,7 @@ def headers_by_proximity(spans, threshold=50):
             header_blocks.append(current_blocks_grp)
             current_blocks_grp=[span]
 
+# if there is a headerblock remaining doesnot go with the last batch this is to add that to the list
     if current_blocks_grp:
         header_blocks.append(current_blocks_grp)
     return header_blocks
