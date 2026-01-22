@@ -168,14 +168,34 @@ This behavior is intentional.
 
 ## 🛣️ What’s Next (Planned, Not Pretended)
 
-The following layers are **designed but intentionally not implemented yet**:
+The following components are **explicitly planned but not yet implemented**. Each builds directly on the guarantees established by the current system:
 
-* 🧭 Vector indexing and hybrid retrieval
-* 🎯 Reranking for precision-sensitive queries
-* ✍️ Generation with stricter citation constraints
-* 📊 Evaluation and diagnostics endpoints
+* ✂️ **Header-Aware Chunking**
 
-These will build on the guarantees established here — not replace them.
+  * Split section-level groupings into retrieval-sized chunks
+  * Ensure chunk boundaries never cross headers or sections
+  * Preserve header and positional metadata on every chunk
+
+* 🧭 **Vector Indexing & Hybrid Retrieval**
+
+  * Combine semantic search with keyword-based retrieval
+  * Optimize for recall without sacrificing traceability
+
+* 🎯 **Reranking for Precision-Sensitive Queries**
+
+  * Improve answer accuracy when multiple sections are retrieved
+
+* ✍️ **Generation with Strict Citation Constraints**
+
+  * Force answers to reference retrieved chunks explicitly
+  * Return "not found" when supporting evidence is missing
+
+* 📊 **Evaluation & Diagnostics**
+
+  * Inspect retrieval coverage and citation accuracy
+  * Surface failure cases instead of hiding them
+
+Each planned layer assumes that upstream structural guarantees hold and does not attempt to repair upstream failures.
 
 ---
 
