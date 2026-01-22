@@ -65,19 +65,24 @@ Chunking-Ready Sections + Metadata
 
 ### 1️⃣ Document Ingestion
 
-* Accepts PDF and TXT files
-* Applies OCR when required
+* Accepts PDF and TXT files with extractable text
+* Preserves page boundaries and basic document metadata
 
-#### 🔐 Layer Guarantees: OCR & Text Extraction
+> **Note:** OCR is a *designed but not yet implemented* ingestion layer. The current system assumes text availability and focuses on structural correctness downstream.
 
-After the OCR and text extraction stage completes, the system guarantees:
+#### 🔐 Layer Guarantees: Document Ingestion (Current State)
 
-* Extracted text is normalized into a consistent plain-text representation
-* Page boundaries are preserved and exposed as metadata
-* OCR output is treated as *lossy but complete* (no silent truncation)
-* Downstream layers do not assume semantic correctness, only textual availability
+At the end of ingestion, the system guarantees:
 
-OCR is intentionally scoped to **enable parsing**, not to infer structure or meaning.
+* Text content is available as plain text before structural parsing begins
+* Page boundaries are preserved when provided by the source document
+
+**Non‑guarantees (by design):**
+
+* OCR accuracy or completeness
+* Text normalization for scanned or image-only documents
+
+These constraints are intentional so downstream guarantees do not depend on unfinished OCR behavior.
 
 ### 2️⃣ Structural Parsing 🧠
 
