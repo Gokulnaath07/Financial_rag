@@ -65,7 +65,7 @@ def parse_pdf_blocks(file_path: str):
     return {
         "structured":structured,
         "headers":header_lines,
-        "Sections":sections
+        "sections":sections
     }
 
 def extract_rawspans(file_path: str):
