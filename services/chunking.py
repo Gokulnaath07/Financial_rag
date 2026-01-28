@@ -1,6 +1,24 @@
-def chunking_narrative_section(sections: list[dict])-> list[dict]:
+def chunking_section(section:dict)-> list[dict]:
 
-    text_blocks=sections['content']
+    if section['section_type']=="atomic":
+        return chunk_atomic_units(section)
+    if section["section_type"]=="narrative":
+        return chunking_narrative_section(section)
+    return []
+
+def chunk_atomic_units(section:dict)-> list[dict]:
+    return [
+        {
+            "section_header": section['header'],
+            "chunk_text": "\n".join(section['content']),
+            "section_type": "atomic",
+            "page_no": section['page_no']
+        }
+    ]
+
+def chunking_narrative_section(section: dict)-> list[dict]:
+
+    text_blocks=section['content']
 
 #step1: put everything in one chunk
 
@@ -8,9 +26,10 @@ def chunking_narrative_section(sections: list[dict])-> list[dict]:
     if single_question_test(full_text):
         return [
             {
-                "section_header": sections['header'],
+                "section_header": section['header'],
                 "chunk_text": full_text,
-                "section_type": "narrative"
+                "section_type": "narrative",
+                "page_no": section['page_no']
             }
         ]
 
@@ -25,9 +44,10 @@ def chunking_narrative_section(sections: list[dict])-> list[dict]:
 
         if single_question_test(check_text):
             chunks.append({
-                "section_header": sections['header'],
+                "section_header": section['header'],
                 "chunk_text": check_text,
-                "section_type": "narrative"
+                "section_type": "narrative",
+                "page_no": section['page_no']
             }
                 
             )
@@ -37,9 +57,10 @@ def chunking_narrative_section(sections: list[dict])-> list[dict]:
     if current:
         leftover_text="\n".join(current)
         chunks.append({
-            "section_header": sections['header'],
+            "section_header": section['header'],
             "chunk_text": leftover_text,
-            "section_type": "narrative"
+            "section_type": "narrative",
+            "page_no": section['page_no']
         })
     return chunks
 
@@ -58,17 +79,17 @@ def single_question_test(text:str)-> bool:
         "as mentioned above", 
         "as shown below",
         "as described below",
-        "as mentioned below"
+        "as mentioned below",
         "seen above",
         "seen below",
         "as per the table",
         "as per the figure",
         "refer to the table",
-        "refer to the figure"
+        "refer to the figure",
         "this table"
     ]
 
-    if any(tex in forbidden_ref_words for tex in text_lower):
+    if any(tex in text_lower for tex in forbidden_ref_words):
         return False
     
     #Test2: Dangling openers
@@ -104,16 +125,7 @@ def single_question_test(text:str)-> bool:
     
     #Test 4 boundary integrity
     bad_starts=(
-        "because",
-        "since",
-        "although",
-        "while",
-        "whereas",
-        "despite",
-        "even though",
-        "unless",
-        "until",
-        "if",
+        
         "and", "but", "or", "therefore")
     
     if text_lower.startswith(bad_starts):
@@ -121,3 +133,12 @@ def single_question_test(text:str)-> bool:
 
 
     return True
+
+
+def returning_allchunks(sections:dict)-> list[dict]:
+    all_chunks=[]
+
+    for section in sections:
+        section_chunks= chunking_section(section)
+        all_chunks.extend(section_chunks)
+    return all_chunks
