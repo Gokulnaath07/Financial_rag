@@ -47,6 +47,7 @@ def parse_pdf_blocks(file_path: str):
                 structured = []
                 structured.append(page_list) # -> [[{"text":"A"},{"text":"B"}]]"""
         structured.extend(structured_spans(page_spans))
+    structured.sort(key=lambda s: (s['page_no'], s['bbox'][1], s['bbox'][0]))
     sections=attach_text_to_header(structured)
     
     sorted_headers= sort_headers(structured)
@@ -78,8 +79,8 @@ def extract_rawspans(file_path: str):
         pages_dicts=pages.get_text("dict")
         blocks=pages_dicts.get("blocks", [])
         for block in blocks:
-            if block.get("type") !=0:
-                continue
+            # if block.get("type") !=0:
+            #     continue we did this for earlier version now we are taking all types of blocks
 
             for line in block.get("lines", []):
                 for span in line.get("spans", []):
