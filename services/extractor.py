@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import statistics
 from pypdf import PdfReader
 import fitz #pymupdf
@@ -107,6 +108,28 @@ def grouping_by_pages(spans: list[dict]) -> dict[int, list[dict]]:
 
     return dict(pages)
 
+def looks_like_headers(text: str)->bool:
+
+    t=text.strip()
+    if not t:
+        return False
+    if t.isupper() and len(t)<80:
+        return True
+    if t.startswith(("ITEM", "Item", "PART ")):
+        return True
+    if re.match(r"^(section\s+)?\d+(\.\d+)*[\).]?\s+[A-Z]", t, re.IGNORECASE):
+        return True
+    if (
+        len(t)<80
+        and t[0].isupper()
+        and not t.endswith(".")
+        #and sum(c.isupper() for c in t) >=2 #boolean sum
+        and sum(1 for c in t if c.isupper()) >=2 #same as above
+        and len(t.split()) <=10
+    ):
+        return True
+    return False
+    
 def structured_spans(raw_spans: list[dict]) -> list[dict]:
     
 
@@ -121,8 +144,8 @@ def structured_spans(raw_spans: list[dict]) -> list[dict]:
 
     structured_spans=[]
     for s in cleaned:
-        is_header_canditate= "header_candidate" if (s['size'] >= median_size * 1.3 and 
-                                                    any(c.isalpha() for c in s['text'])) else "body"
+        is_header_canditate= "header_candidate" if (looks_like_headers(s['text']) or (s['size'] >= median_size * 1.3 and 
+                                                    any(c.isalpha() for c in s['text']))) else "body"
         
         structured_spans.append(
             {

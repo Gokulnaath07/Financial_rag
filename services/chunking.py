@@ -38,8 +38,8 @@ def chunking_narrative_section(section: dict)-> list[dict]:
     chunks=[]
     current=[]
 
-    for section in text_blocks:
-        current.append(section)
+    for block in text_blocks:
+        current.append(block)
         check_text="\n".join(current)
 
         if single_question_test(check_text):
