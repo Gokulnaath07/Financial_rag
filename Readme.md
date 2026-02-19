@@ -1,7 +1,3 @@
-Here is a polished, GitHub-ready landing README — clean, structured, and aligned with your original tone (correctness-first, deliberate, not hype-driven).
-
----
-
 # RAG Financial Document Question Answering API
 
 > 📄 ➜ 🧠 ➜ 🔍 ➜ ✍️ ➜ ✅
