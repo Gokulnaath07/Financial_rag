@@ -131,8 +131,8 @@ So we fix structure first.
 
 ## 📌 Status
 
-![Parsing](https://img.shields.io/badge/Parsing-~70%25%20Complete-blue)
-![Section%20Tree](https://img.shields.io/badge/Section%20Tree-In%20Progress-yellow)
+![Parsing](https://img.shields.io/badge/Parsing-100%25-brightgreen)
+![Section%20Tree](https://img.shields.io/badge/SectionTree-100%25-brightgreen)
 ![Chunking](https://img.shields.io/badge/Chunking-Planned-lightgrey)
 ![Embedding](https://img.shields.io/badge/Embedding-Planned-lightgrey)
 ![Retrieval](https://img.shields.io/badge/Retrieval-Planned-lightgrey)
