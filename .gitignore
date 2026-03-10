@@ -9,5 +9,8 @@ storage/
 .env
 .env.*
 
-json.log
-*.json
+debug/
+*.log
+
+.DS_Store
+Thumbs.db
