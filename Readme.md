@@ -87,9 +87,9 @@ Parsing is ~70% complete.
 * [x] Centralized header detection
 * [x] Section level assignment
 * [x] Hierarchy stabilization (clamp)
-* [ ] Span-to-line reconstruction
-* [ ] Stack-based section tree
-* [ ] `section_path` + page tracking
+* [x] Span-to-line reconstruction
+* [x] Stack-based section tree
+* [x] `section_path` + page tracking
 
 ### Phase 2 — Chunking
 
