@@ -59,20 +59,16 @@ Downstream layers are not allowed to compensate for upstream structural errors.
 
 ---
 
-## 🧩 Current Focus: Structural Parsing
+## 🧩 Current Focus: Embedding Layer
 
-The parsing layer currently guarantees:
+This layer is to use the chunks obtained from chunking layer convert it to vector embeddings so that we can store this is vector database for semantic retrival later.
 
-* Global reading-order preservation
-* Explicit `is_header` structural tagging
-* Deterministic section level assignment (1–4)
-* Header-only depth clamp (prevents illegal hierarchy jumps)
-* Page-continuous processing (no per-page resets)
+Embedding layer is planned
 
-This ensures hierarchy is stable before building the section tree.
-
-Parsing is ~70% complete.
-
+- Generate embeddings for the chunk
+- Store them in vector database
+- Preserve chunk metadata for retrival
+  
 ---
 
 ## 🛣️ Roadmap
@@ -86,11 +82,14 @@ Parsing is ~70% complete.
 * [x] Span-to-line reconstruction
 * [x] Stack-based section tree
 * [x] `section_path` + page tracking
+* [x] Section validation layer
 
 ### Phase 2 — Chunking
 
 * [x] Section-safe chunk boundaries
 * [x] Metadata-preserving chunks
+* [x] Sliding-window narrative chunking
+* [x] Chunk validation + diagnostics
 
 ### Phase 3 — Embedding & Indexing
 
