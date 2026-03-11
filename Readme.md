@@ -139,5 +139,5 @@ So we fix structure first.
 
 This repository represents a correctness-first foundation for a production-grade RAG system operating on real-world financial documents.
 
-It is intentionally scoped, disciplined, and built to be extended — not rushed.
+It is intentionally scoped, disciplined, and built to be extended NOT RUSHED.
 
