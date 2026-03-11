@@ -89,8 +89,8 @@ Parsing is ~70% complete.
 
 ### Phase 2 — Chunking
 
-* [ ] Section-safe chunk boundaries
-* [ ] Metadata-preserving chunks
+* [x] Section-safe chunk boundaries
+* [x] Metadata-preserving chunks
 
 ### Phase 3 — Embedding & Indexing
 
@@ -129,7 +129,7 @@ So we fix structure first.
 
 ![Parsing](https://img.shields.io/badge/Parsing-100%25-brightgreen)
 ![Section%20Tree](https://img.shields.io/badge/SectionTree-100%25-brightgreen)
-![Chunking](https://img.shields.io/badge/Chunking-Planned-lightgrey)
+![Chunking](https://img.shields.io/badge/Chunking-100%25-brightgreen)
 ![Embedding](https://img.shields.io/badge/Embedding-Planned-lightgrey)
 ![Retrieval](https://img.shields.io/badge/Retrieval-Planned-lightgrey)
 ![Backend](https://img.shields.io/badge/Backend-FastAPI-green)
