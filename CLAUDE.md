@@ -19,6 +19,7 @@ As an AI coding agent, you must **NOT** deviate from the defined layer responsib
 
 ### Extractor Output Contract
 Extractor must return a fully structured Document object containing validated Section objects but no chunks.
+**Extractor implementation is frozen.** Claude must not modify `services/extractor.py`.
 
 ## Primary Data Models
 Never change these schemas without explicit instruction or approval. Code implementation should match these contracts.
@@ -70,7 +71,7 @@ Never change these schemas without explicit instruction or approval. Code implem
 ```
 
 ## Agent Coding Guidelines
-- **Always adhere to `TODO.md`**: Follow the exact sequence. Tackle Extractor tree building first, multi-line header merging, then Chunker logic.
+- **Always adhere to `TODO.md`**: Follow the exact sequence. Extractor phase (Phase 1) is complete. The current focus is on Phase 2 (Chunker Design).
 - **Python Conventions**: Use standard Python conventions. Keep imports clean and localized to the top of the file unless strictly necessary for scoped logic.
 - **No side-effects in Extractor**: Ensure `extractor.py` just orchestrates and returns the parsed objects. It should not contain hardcoded JSON file dumping logic inside extraction methods; that belongs in a pipeline or orchestration script.
 - **Stack-based Tree Building**: Use a standard python list `[]` as a stack for building hierarchy, utilizing `.pop()` and tracking depth using `section_level`.
@@ -97,26 +98,30 @@ Chunker MUST NOT:
 
 ## Implementation Order (STRICT)
 
-**Extractor Pipeline Flow:**
+### Phase 1: Extractor Pipeline Flow (COMPLETE)
 ```text
 raw spans → structured spans → [sort] → header merge → section tree → metadata → validation
 ```
 
-Claude must implement functions in this exact order:
+*(Extractor phase functions `structured_spans`, `merge_multiline_headers`, `build_section_tree`, `compute_page_end`, `compute_section_stats`, and `validate_sections` are now complete.)*
 
-1. `structured_spans()`
-   - *Sorting Step: Structured spans must be sorted by `(page_no, y, x)` before `merge_multiline_headers()` is executed.*
-2. `merge_multiline_headers()` - *Note: Assumes spans are sorted by `(page_no, y, x)` prior to calling.*
-3. `build_section_tree()`
-4. `compute_page_end()`
-5. `compute_section_stats()`
-6. `validate_sections()`
+### Phase 2: Chunker Pipeline Flow (CURRENT)
+```text
+validated sections → chunking entry logic → narrative chunking → chunk validation → diagnostic report
+```
 
-Only after extractor completion should chunking begin.
+Claude must implement Phase 2 functions in this exact order:
+
+1. `chunk_sections()`
+2. `chunking_narrative_section()`
+3. Chunk validation logic
+4. Final diagnostic reporting
 
 ## Function Contracts
 
 To ensure responsibilities stay isolated, functions must adhere to these exact definitions:
+
+### Phase 1: Extractor (Completed)
 
 - **`structured_spans(raw_spans)`**:
   - Input: grouped page spans / raw spans
@@ -144,3 +149,22 @@ To ensure responsibilities stay isolated, functions must adhere to these exact d
   - *Invariant Check 1*: Must enforce that `len(section_path) == section_level` to guarantee hierarchy consistency.
   - *Invariant Check 2*: Sections must remain ordered by `page_start` and header hierarchy.
   - *Invariant Check 3*: Sections with no `content_blocks` and no children must be removed.
+
+### Phase 2: Chunker (Current Focus)
+
+- **`chunk_sections(document)`**:
+  - Input: Fully validated Document object from the Extractor layer.
+  - Output: Iterates over sections and dispatches to appropriate chunking logic.
+  - *Chunking Rule*:
+    - If `section.token_estimate <= 500` → create ONE atomic chunk.
+    - If `section.token_estimate > 500` → call `chunking_narrative_section(section)`.
+
+- **`chunking_narrative_section(section)`**:
+  - Input: A single Section object.
+  - Output: List of overlapping Chunk objects, split by paragraph boundaries with sliding window.
+  - *Invariant Check*: Chunks must STRICTLY inherit `header`, `document_id`, `section_id`, and `section_path`.
+  - *Sliding Window Parameters (Narrative Sections Only)*:
+    - `max_tokens = 600`
+    - `overlap = 100`
+    - These parameters apply only when `section.token_estimate > 500`.
+    - Atomic sections (≤500 tokens) must remain intact and produce exactly one chunk.

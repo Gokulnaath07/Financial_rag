@@ -3,8 +3,7 @@ import json
 
 
 from services.extractor import parse_pdf_blocks
-from services.chunking import returning_allchunks
-
+from services.chunking import chunk_sections
 # Ensure debug directory exists
 os.makedirs("debug", exist_ok=True)
 
@@ -15,6 +14,14 @@ structured_doc="debug/structured.json"
 with open(structured_doc, "w", encoding="utf-8", errors="ignore") as w:
     w.write(json_struct)
 print(f"Written to {structured_doc}")
+
+chunks=chunk_sections(parse)
+chunk_json=json.dumps(chunks, indent=2, ensure_ascii=False)
+chunk_doc="debug/chunk_doc.json"
+with open(chunk_doc, "w", encoding="utf-8", errors="ignore") as w:
+    w.write(chunk_json)
+print(f"Written to {chunk_doc}")
+
 # result=parse.get("sections", [])
 
 # for s in result:
