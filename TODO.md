@@ -126,57 +126,57 @@ Only after extractor completion should chunking begin.
 **Design Reference**: `notes/phase_3_design.md` (full architecture, contracts, risks, gotchas).
 **Stack**: `BAAI/bge-small-en-v1.5` (sentence-transformers) + ChromaDB (local persistent). OSS-only, no Docker, Python 3.12.
 
-- [ ] **1. Add embedding + vector libs to `requirements.txt`**
+- [X] **1. Add embedding + vector libs to `requirements.txt`**
 
-  - [ ] Pin `sentence-transformers` and `chromadb`.
-  - [ ] Get user signoff before running `pip install`.
-- [ ] **2. Add `config.py` with env-backed defaults**
+  - [X] Pin `sentence-transformers` and `chromadb`.
+  - [X] Get user signoff before running `pip install`.
+- [X] **2. Add `config.py` with env-backed defaults**
 
-  - [ ] `EMBED_MODEL` (default `BAAI/bge-small-en-v1.5`)
-  - [ ] `CHROMA_PATH` (default `storage/chroma`)
-  - [ ] `COLLECTION_NAME` (default `financial_docs`)
-- [ ] **3. Create `services/embedding.py` — Embedder layer**
+  - [X] `EMBED_MODEL` (default `BAAI/bge-small-en-v1.5`)
+  - [X] `CHROMA_PATH` (default `storage/chroma`)
+  - [X] `COLLECTION_NAME` (default `financial_docs`)
+- [X] **3. Create `services/embedding.py` — Embedder layer**
 
-  - [ ] Module-level model singleton (load once per process).
-  - [ ] `embed_chunks(chunks, batch_size=32)` with BGE `"passage: "` prefix.
-  - [ ] L2-normalize all output vectors.
-  - [ ] `embed_query(text)` stub with `"query: "` prefix (Phase 4 will call).
-  - [ ] Assert + warn when input exceeds model max tokens (don't silently truncate).
-  - [ ] Include teaching comment showing raw HF tokenize → forward → pool → normalize equivalent.
-- [ ] **4. Add `validate_embedded_chunks(embedded)` gate**
+  - [X] Module-level model singleton (load once per process).
+  - [X] `embed_chunks(chunks, batch_size=32)` with BGE `"passage: "` prefix.
+  - [X] L2-normalize all output vectors.
+  - [X] `embed_query(text)` stub with `"query: "` prefix (Phase 4 will call).
+  - [X] Assert + warn when input exceeds model max tokens (don't silently truncate).
+  - [X] Include teaching comment showing raw HF tokenize → forward → pool → normalize equivalent.
+- [X] **4. Add `validate_embedded_chunks(embedded)` gate**
 
-  - [ ] Dim consistency across all vectors.
-  - [ ] Norm within tolerance (||v|| ≈ 1.0 ± 1e-3).
-  - [ ] No NaN / Inf values.
-  - [ ] `chunk_id` uniqueness.
-  - [ ] Required metadata fields present.
-  - [ ] Log + drop invalid (mirror Phase 2's `validate_chunks` style).
-- [ ] **5. Create `services/indexing.py` — Indexer layer**
+  - [X] Dim consistency across all vectors.
+  - [X] Norm within tolerance (||v|| ≈ 1.0 ± 1e-3).
+  - [X] No NaN / Inf values.
+  - [X] `chunk_id` uniqueness.
+  - [X] Required metadata fields present.
+  - [X] Log + drop invalid (mirror Phase 2's `validate_chunks` style).
+- [X] **5. Create `services/indexing.py` — Indexer layer**
 
-  - [ ] `index_chunks(embedded, store_path, collection_name)` — idempotent upsert on `chunk_id`.
-  - [ ] `section_path` stored as `" > ".join(path)` (Chroma metadata = primitives only).
-  - [ ] `open_index(store_path, collection_name)` — read-only handle for Phase 4.
-  - [ ] `index_diagnostics(handle)` — count, dim, model, sample metadata.
-  - [ ] Hard-fail if `embedding` field missing on input.
-- [ ] **6. Extend `pipeline/pipeline_flow.py`**
+  - [X] `index_chunks(embedded, store_path, collection_name)` — idempotent upsert on `chunk_id`.
+  - [X] `section_path` stored as `" > ".join(path)` (Chroma metadata = primitives only).
+  - [X] `open_index(store_path, collection_name)` — read-only handle for Phase 4.
+  - [X] `index_diagnostics(handle)` — count, dim, model, sample metadata.
+  - [X] Hard-fail if `embedding` field missing on input.
+- [X] **6. Extend `pipeline/pipeline_flow.py`**
 
-  - [ ] Add steps: `embed_chunks → validate_embedded_chunks → index_chunks → index_diagnostics`.
-  - [ ] Preserve existing `structured.json` + `chunk_doc.json` dumps.
-- [ ] **7. Emit Phase 3 debug diagnostics**
+  - [X] Add steps: `embed_chunks → validate_embedded_chunks → index_chunks → index_diagnostics`.
+  - [X] Preserve existing `structured.json` + `chunk_doc.json` dumps.
+- [X] **7. Emit Phase 3 debug diagnostics**
 
-  - [ ] `debug/embed_stats.json` — counts, dim, model, norm summary. NO raw vectors.
-  - [ ] `debug/index_report.json` — collection count, sample metadata.
-- [ ] **8. Wire `main.py /ingest` to full pipeline**
+  - [X] `debug/embed_stats.json` — counts, dim, model, norm summary. NO raw vectors.
+  - [X] `debug/index_report.json` — collection count, sample metadata.
+- [X] **8. Wire `main.py /ingest` to full pipeline**
 
-  - [ ] Run parse → chunk → embed → validate → index synchronously.
-  - [ ] Return `{doc_id, chunk_count, indexed: true}`.
-  - [ ] Leave `/ask` untouched (Phase 4 owns retrieval).
-- [ ] **9. Confirm `storage/chroma/` gitignore coverage**
+  - [X] Run parse → chunk → embed → validate → index synchronously.
+  - [X] Return `{doc_id, chunk_count, indexed: true}`.
+  - [X] Leave `/ask` untouched (Phase 4 owns retrieval).
+- [X] **9. Confirm `storage/chroma/` gitignore coverage**
 
-  - [ ] Already covered by `storage/` rule. Note in commit message.
-- [ ] **10. Smoke test on Apple 10-K**
+  - [X] Already covered by `storage/` rule. Note in commit message.
+- [X] **10. Smoke test on Apple 10-K**
 
-  - [ ] Run `pipeline_flow.py` end-to-end.
-  - [ ] Record chunk count, embedding dim, index count in `notes/phase_3_design.md` "Open Items After Implementation".
+  - [X] Run `pipeline_flow.py` end-to-end.
+  - [X] Record chunk count, embedding dim, index count in `notes/phase_3_design.md` "Open Items After Implementation".
 
 ---

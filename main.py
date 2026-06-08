@@ -3,7 +3,10 @@ import uvicorn
 import uuid
 import os
 from pydantic import BaseModel #pydantic for validation(whether the data has correct type in some cases it will convert the sent data eg 123 int to "123"string if string is expected)
-from services.extractor import extract_txt
+from services.extractor import extract_txt, parse_pdf_blocks
+from services.chunking import chunk_sections
+from services.embedding import embed_chunks, validate_embedded_chunks
+from services.indexing import index_chunks
 
 
 current_app=FastAPI()
@@ -33,10 +36,21 @@ async def ingestDocuments(
     with open(save_path, "wb") as f:
         f.write(contents)
 
+    try:
+        document = parse_pdf_blocks(save_path)
+        chunks = chunk_sections(document)
+        embedded = embed_chunks(chunks)
+        valid = validate_embedded_chunks(embedded)
+        handle = index_chunks(valid)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Pipeline failed: {e}")
+
     return{"doc_id": doc_id,
            "filename": file.filename,
            "doc_type": doc_type,
-           "status": "Document ingested successfully"
+           "chunk_count": handle["count"],
+           "indexed": True,
+           "status": "Document ingested and indexed successfully"
     }
 
 class AskRequest(BaseModel):
