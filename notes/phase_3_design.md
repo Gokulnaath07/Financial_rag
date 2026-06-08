@@ -178,10 +178,28 @@ index_diagnostics(handle)                → debug/index_report.json
 
 ## Open Items After Implementation
 
-- Smoke test results & expected chunk counts (record here once Step 10 runs)
-- Decision on whether `bge-small` quality is sufficient or upgrade to `e5-base`
-- BM25 layer design for Phase 4
-- `/ask` rewiring spec for Phase 4
+### Smoke test results — 2026-06-07
+Run: `python -m pipeline.pipeline_flow` on `storage/docs/f081b0e2.../Apple 10-k.pdf`.
+
+| Metric | Value |
+|---|---|
+| Chunks produced (Phase 2 output) | 135 |
+| Embedded successfully | 135 / 135 |
+| Validation drops | 0 (dim, norm, NaN, dup, metadata — all clean) |
+| Embedding dim | 384 (BGE-small ✓) |
+| Norm range | min 0.99999994, max 1.00000014, mean 1.00000002 |
+| Indexed in Chroma | 135 / 135 |
+| Collection | `financial_docs` |
+| Store path | `storage/chroma/` (SQLite + HNSW binaries) |
+| Wall time | ~2–5 min (first run: model download dominates) |
+
+### Token-limit warnings (surfaces Phase 2 gap)
+17+ chunks exceeded BGE max_seq_length=512 (range observed: 578–600 tokens). The embedder warned loudly per chunk; sentence-transformers truncated at encode time. **This is designed behavior** — the warnings reveal that Phase 2's narrative splitter occasionally over-produces in the 600–800 gap before the emergency splitter catches it. Logged here as input for a future Phase 2 polish pass.
+
+### Still open
+- Decision on whether `bge-small` quality is sufficient or upgrade to `e5-base` — defer until retrieval evaluation in Phase 4
+- BM25 layer design for Phase 4 (`services/bm25_index.py` with `rank_bm25`)
+- `/ask` rewiring spec for Phase 4 (hybrid retrieval + LLM call + citation enforcement)
 
 ---
 
