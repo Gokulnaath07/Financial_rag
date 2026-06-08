@@ -125,6 +125,10 @@ Financial_rag/
 └── Readme.md                  # this file
 ```
 
+- Generate embeddings for the chunk
+- Store them in vector database
+- Preserve chunk metadata for retrival
+  
 ---
 
 ## ▶️ Quickstart
