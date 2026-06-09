@@ -40,9 +40,31 @@ async def ingestDocuments(
 
     try:
         document = parse_pdf_blocks(save_path)
+        document["document_id"] = doc_id
         chunks = chunk_sections(document)
+
+        if not chunks:
+            raise HTTPException(
+                status_code=400,
+                detail="Ingestion failed: no extractable chunks found in document",
+            )
+
         embedded = embed_chunks(chunks)
+
+        if not embedded:
+            raise HTTPException(
+                status_code=500,
+                detail="Ingestion failed: embedding step returned no vectors",
+            )
+
         valid = validate_embedded_chunks(embedded)
+
+        if not valid:
+            raise HTTPException(
+                status_code=500,
+                detail="Ingestion failed: no valid embedded chunks to index",
+            )
+
         handle = index_chunks(valid)
         build_bm25_index()
     except Exception as e:
