@@ -33,9 +33,9 @@ HYBRID_ALPHA = float(os.environ.get("HYBRID_ALPHA", "0.5"))
 # === Phase 4: Answering ===
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-LLM_MODEL = os.environ.get("LLM_MODEL", "gemini-2.0-flash")
+LLM_MODEL = os.environ.get("LLM_MODEL", "gemini-2.5-flash")
 LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.1"))
 LLM_MAX_OUTPUT_TOKENS = int(os.environ.get("LLM_MAX_OUTPUT_TOKENS", "1024"))
 
-NOT_FOUND_THRESHOLD = float(os.environ.get("NOT_FOUND_THRESHOLD", "0.35"))
+NOT_FOUND_THRESHOLD = float(os.environ.get("NOT_FOUND_THRESHOLD", "0.005"))
 TOP_K_FOR_PROMPT = int(os.environ.get("TOP_K_FOR_PROMPT", "5"))
