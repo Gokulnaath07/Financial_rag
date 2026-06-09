@@ -5,3 +5,6 @@ pypdf
 pymupdf
 sentence-transformers
 chromadb
+rank_bm25
+google-genai
+python-dotenv
