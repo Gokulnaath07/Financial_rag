@@ -1,0 +1,11 @@
+# Exclude heavy folders
+venv/
+.git/
+__pycache__/
+.vscode/
+
+# Exclude large data files (important for 8GB RAM)
+*.json
+*.csv
+*.log
+storage/

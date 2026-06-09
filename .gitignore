@@ -8,3 +8,12 @@ storage/
 
 .env
 .env.*
+!.env.example
+
+debug/
+*.log
+
+.DS_Store
+Thumbs.db
+
+.obsidian/
