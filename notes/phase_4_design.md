@@ -454,53 +454,42 @@ OUTPUT_SCHEMA = {
 
 ## Open Items After Implementation
 
-### Smoke test results — 2026-06-09
+### Smoke test results — 2026-06-09 (final)
 
-Run: `python smoke_phase_4.py` against `financial_docs` collection (270 chunks — Apple 10-K ingested twice, uuid4 chunk_ids don't dedupe on re-ingest).
+Run: `python smoke_phase_4.py` against `financial_docs` collection (270 chunks — Apple 10-K ingested twice).
 
-**Pipeline status: ✅ Working end-to-end.** Retrieval, RRF fusion, BGE-reranker, prompt builder, structured-output LLM call, citation verification, "not found" gate — all execute. Error handling correctly surfaces `LLMRateLimitError` instead of crashing.
+**Pipeline status: ✅ Fully working end-to-end with citations.**
 
-**Per-query outcome:**
-
-| Question | Top score | LLM called? | Result |
+| Question | Top score | Confidence | Result |
 |---|---|---|---|
-| "What was Apple's total net revenue?" | (n/a) | quota error | LLMRateLimitError 429 |
-| "What are Apple's primary product categories?" | (n/a) | quota error | LLMRateLimitError 429 |
-| "Who are Apple's auditors?" | 0.033 | No (gate fired) | confidence=not_found |
-| "What risks does Apple face from operations in China?" | (n/a) | quota error | LLMRateLimitError 429 |
-| "How much did Apple spend on research and development?" | (n/a) | quota error | LLMRateLimitError 429 |
-| "moisture content" (gibberish) | 0.012 | No (gate fired) | confidence=not_found ✓ correct |
+| Apple's total net revenue? | 0.903 | high | "$416,161M (2025), $391,035M (2024), $383,285M (2023)" + 3 citations (page 32) |
+| Primary product categories? | 0.978 | high | "iPhone, Mac, iPad, Wearables, Home, Services" + 4 citations |
+| Apple's auditors? | 0.033 | high | "Ernst & Young LLP" + 2 citations (page 55) |
+| Risks from operations in China? | 0.616 | low | "I cannot find this in the documents" — retrieval missed Risk Factors section |
+| R&D spending? | 0.816 | high | "$34,550M / $31,370M / $29,915M" + reasoning + 3 citations (page 32) |
+| "moisture content" (gibberish) | 0.012 | not_found | Score gate fired correctly ✓ |
 
-Retrieval latency: ~15s per query on first run (model + reranker load). Subsequent queries would be much faster (~1s).
+**Result: 4 of 5 real questions answered with high confidence + valid citations. 1 came back "low" (Risk Factors section not in top-K). Gibberish correctly gated.**
 
-### Known issues to fix before next smoke test
+Latencies: 17–34s retrieve (cold-start), 2–6s LLM. After warm-up: ~3–5s end-to-end.
 
-#### Issue 1: Gemini API quota = 0 on current key
+### Root cause of yesterday's `limit: 0` errors
 
-The error: `limit: 0, model: gemini-2.0-flash`. This is NOT "used up free tier" — this is "key has zero quota allocated."
+The earlier `429 RESOURCE_EXHAUSTED limit:0` on `gemini-2.0-flash` was Google's soft-deprecation signal — the model was being phased out. Today the same call returns a clean `404 NOT_FOUND: "no longer available"`. The fix was switching to **`gemini-2.5-flash`** as the default in `config.py`.
 
-**Root cause hypothesis:** The 53-char key length (vs the standard 39-char AI Studio key) suggests it was generated in **Google Cloud Console** rather than AI Studio. Cloud Console keys require the Gemini API to be explicitly enabled + billing linked on the project, even for free tier.
+The 53-char key (`AQ.Ab8...`) was a red herring — that's just the current Gemini key format. AI Studio rolled it out at some point. Both the old 39-char `AIza...` and the new `AQ...` formats work fine.
 
-**Fix:** Create a new key at https://aistudio.google.com/app/apikey (NOT Google Cloud Console). Replace the value in `.env`. AI Studio keys ship with working free tier out of the box.
-
-#### Issue 2: `NOT_FOUND_THRESHOLD = 0.35` is way too strict
-
-Design doc flagged this as "provisional, tune after first 20 queries." Now we have data: actual RRF+rerank scores fall in the **0.01–0.10 range**. The 0.35 threshold short-circuits almost everything before the LLM gets a chance.
-
-**Fix:** drop `NOT_FOUND_THRESHOLD` to `0.005` in `.env`. The score gate should only catch *truly empty* retrievals. Let the LLM make the actual "not found" decision via the prompt instruction.
-
-### Action items for next session (in order)
-1. Get fresh AI Studio key, replace `GEMINI_API_KEY` in `.env`
-2. Add `NOT_FOUND_THRESHOLD=0.005` to `.env` (or update `config.py` default)
-3. Re-run `python smoke_phase_4.py`
-4. Record updated results in this section
-5. If retrieval quality is poor on financial questions (e.g., "auditors" → wrong chunk), revisit Phase 2 chunking — atomic chunks for sections with key facts may be over-aggressive
+### Defaults updated in `config.py`
+- `LLM_MODEL` — `gemini-2.0-flash` → `gemini-2.5-flash` (working, fast, free tier OK)
+- `NOT_FOUND_THRESHOLD` — `0.35` → `0.005` (observed scores live in 0.01–1.0 range; 0.005 catches only truly empty retrievals)
 
 ### Still open (lower priority)
+- "Risks from operations in China" came back low-confidence — investigate whether Phase 2 chunking is hiding the Risk Factors section, or if the retrieval needs a different rerank threshold
+- Deterministic chunk_ids (hash of section_id + chunk_index) so re-ingest is idempotent — currently uuid4 chunk_ids cause re-ingest to duplicate (collection is at 270 = 135 × 2)
 - Decide whether to enable streaming `/ask` responses (SSE)
 - Switch from `rank_bm25` to `bm25s` for latency if scale grows
 - Multi-doc cross-document Q&A support
-- Deterministic chunk_ids (hash of section_id + chunk_index) so re-ingest is idempotent
+- Add cold-start warming (preload reranker on FastAPI startup so first `/ask` isn't 30s)
 
 ---
 
